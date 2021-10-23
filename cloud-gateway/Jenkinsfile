@@ -8,7 +8,7 @@ pipeline {
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
-        NEXUS_URL = "tbd"
+        NEXUS_URL = "192.168.100.189:8081"
         NEXUS_REPOSITORY = "cloud-gateway-repo"
         NEXUS_CREDENTIALS_ID = "nexus-credentials"
     }
@@ -16,11 +16,15 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            checkout scm
+            steps {
+                checkout scm
+            }
         }
 
         stage('Build') {
-            sh "mvn --batch-mode clean install"
+            steps {
+                sh "mvn --batch-mode clean install"
+            }
         }
 
         stage('Build Docker Image + Push') {

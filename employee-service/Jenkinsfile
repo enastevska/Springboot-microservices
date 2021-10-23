@@ -8,7 +8,7 @@ pipeline {
     environment {
         NEXUS_VERSION = "nexus3"
         NEXUS_PROTOCOL = "http"
-        NEXUS_URL = "tbd"
+        NEXUS_URL = "192.168.100.189:8081"
         NEXUS_REPOSITORY = "employee-service-repo"
         NEXUS_CREDENTIALS_ID = "nexus-credentials"
     }
@@ -16,21 +16,29 @@ pipeline {
     stages {
 
         stage('Checkout') {
-            checkout scm
+            steps {
+                checkout scm
+            }
         }
 
         stage('Clean') {
-            sh "mvn --batch-mode clean"
+            steps {
+                sh "mvn --batch-mode clean"
+            }
         }
 
         stage('Unit And Integration Tests') {
-            sh 'mvn --batch-mode test'
+            steps {
+                sh 'mvn --batch-mode test'
+            }
             def pom = readMavenPom file:'pom.xml'
             env.version = pom.version
         }
 
         stage('Backend Install') {
-            sh "mvn --batch-mode install -DskipTests"
+            steps {
+                sh "mvn --batch-mode install -DskipTests"
+            }
         }
 
         stage('Build Docker Image + Push') {

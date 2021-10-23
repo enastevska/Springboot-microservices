@@ -30,9 +30,11 @@ pipeline {
         stage('Unit And Integration Tests') {
             steps {
                 sh 'mvn --batch-mode test'
+                script {
+                    def pom = readMavenPom file:'pom.xml'
+                    env.version = pom.version
+                }
             }
-            def pom = readMavenPom file:'pom.xml'
-            env.version = pom.version
         }
 
         stage('Backend Install') {
@@ -43,16 +45,20 @@ pipeline {
 
         stage('Build Docker Image + Push') {
             steps {
-                dir ('department-service') {
-                    def app = docker.build "localhost:5050/department-service:${env.version}"
-                    app.push()
+                script {
+                    dir ('department-service') {
+                        def app = docker.build "localhost:5050/department-service:${env.version}"
+                        app.push()
+                    }
                 }
             }
         }
 
         stage ('Run Docker Image') {
             steps {
-                docker.image("localhost:5000/department-service:${env.version}").run('-p 8082:8082 --name department --link service-registry')
+                script {
+                    docker.image("localhost:5000/department-service:${env.version}").run('-p 8082:8082 --name department --link service-registry')
+                }
             }
         }
 

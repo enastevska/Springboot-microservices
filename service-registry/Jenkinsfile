@@ -29,16 +29,21 @@ pipeline {
 
         stage('Build Docker Image + Push') {
             steps {
-                dir ('service-registry') {
-                    def app = docker.build "localhost:5050/service-registry:${env.version}"
-                    app.push()
+                script {
+                    dir ('service-registry') {
+                        def app = docker.build "localhost:5050/service-registry:${env.version}"
+                        app.push()
+                    }
                 }
             }
+
         }
 
         stage ('Run Docker Image') {
             steps {
-                docker.image("localhost:5000/service-registry:${env.version}").run('-p 8761:8761 --name service-registry')
+                script {
+                    docker.image("localhost:5000/service-registry:${env.version}").run('-p 8761:8761 --name service-registry')
+                }
             }
         }
 

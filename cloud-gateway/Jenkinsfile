@@ -29,16 +29,20 @@ pipeline {
 
         stage('Build Docker Image + Push') {
             steps {
-                dir ('cloud-gateway') {
-                    def app = docker.build "localhost:5050/cloud-gateway:${env.version}"
-                    app.push()
+                script {
+                    dir ('cloud-gateway') {
+                        def app = docker.build "localhost:5050/cloud-gateway:${env.version}"
+                        app.push()
+                    }
                 }
             }
         }
 
         stage ('Run Docker Image') {
             steps {
-                docker.image("localhost:5000/cloud-gateway:${env.version}").run('-p 9191:9191 --name gateway --link service-registry')
+                script {
+                    docker.image("localhost:5000/cloud-gateway:${env.version}").run('-p 9191:9191 --name gateway --link service-registry')
+                }
             }
         }
 

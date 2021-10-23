@@ -1,0 +1,77 @@
+pipeline {
+    agent any
+
+    tools {
+        maven 'mvn3'
+    }
+
+    environment {
+        NEXUS_VERSION = "nexus3"
+        NEXUS_PROTOCOL = "http"
+        NEXUS_URL = "tbd"
+        NEXUS_REPOSITORY = "service-registry-repo"
+        NEXUS_CREDENTIALS_ID = "nexus-credentials"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            checkout scm
+        }
+
+        stage('Build') {
+            sh "mvn --batch-mode clean install"
+        }
+
+        stage('Build Docker Image + Push') {
+            dir ('service-registry') {
+                def app = docker.build "localhost:5050/service-registry:${env.version}"
+                app.push()
+            }
+        }
+
+        stage ('Run Docker Image') {
+            docker.image("localhost:5000/service-registry:${env.version}").run('-p 8761:8761 --name service-registry')
+        }
+
+        stage('Nexus Repository') {
+            steps {
+                script {
+                    pom = readMavenPom file : "pom.xml"
+                    filesByGlob = findFiles(glob: "target/*.${pom.packaging}");
+                    artifactPath = filesByGlob[0].path;
+                    artifactExists = fileExists artifactPath;
+                    if (artifactExists) {
+                        echo "*** File: ${aritfactPath}, group: ${pom.groupId}, packaging: ${com.packaging}, version: ${pom.version}";
+                        nexusArtifactUploader(
+                            nexusVersion: NEXUS_VERSION,
+                            protocol: NEXUS_PROTOCOL,
+                            nexusUrl: NEXUS_URL,
+                            groupId: pom.groupId,
+                            version: pom.version,
+                            repository: NEXUS_REPOSITORY,
+                            credentialsId: NEXUS_CREDENTIALS_ID,
+                            artifacts: [
+                                [artifactId: pom.artifactId,
+                                classifier: '',
+                                file: artifactPath,
+                                type: pom.packaging],
+                                [artifactId: pom.artifactId,
+                                classifier: '',
+                                file: "pom.xml",
+                                type: "pom"
+                                ]
+                            ]
+                        );
+                    } else {
+                        error "File ${artifactPath} couldn't be found."
+                    }
+                }
+            }
+        }
+
+        stage ('Final') {
+            build job: 'employee-service-pipeline', wait: false
+        }
+    }
+}

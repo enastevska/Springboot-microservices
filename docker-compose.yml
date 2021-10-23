@@ -1,0 +1,49 @@
+version: '3.8'
+services:
+  service-registry:
+    image: com/service-registry
+    container_name: service-registry
+    build:
+      context: ./service-registry
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+
+  cloud-gateway:
+    image: com/cloud-gateway
+    container_name: cloud-gateway
+    build:
+      context: ./cloud-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "9191:9191"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://localhost:8761/eureka/
+    links:
+      - service-registry
+
+  employee-service:
+    image: com/employee-service
+    container_name: employee-service
+    build:
+      context: ./employee-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://localhost:8761/eureka/
+    links:
+      - service-registry
+
+  department-service:
+    image: com/department-service
+    container_name: department-service
+    build:
+      context: ./department-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      EUREKA_CLIENT_SERVICE_URL_DEFAULT_ZONE: http://localhost:8761/eureka/
+    links:
+      - service-registry

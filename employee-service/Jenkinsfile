@@ -99,8 +99,12 @@ pipeline {
             }
         }
 
-        stage ('Final') {
-            build job: 'department-service-pipeline', wait: false
+        stage ('Department service') {
+            steps {
+                script {
+                    build job: 'department-service-pipeline', wait: false
+                }
+            }
         }
     }
 }

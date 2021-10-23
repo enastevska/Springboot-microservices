@@ -98,8 +98,12 @@ pipeline {
             }
         }
 
-        stage ('Final') {
-            build job: 'cloud-gateway-pipeline', wait: false
+        stage ('Cloud gateway service') {
+            steps {
+                script {
+                build job: 'cloud-gateway-pipeline', wait: false
+                }
+            }
         }
     }
 }

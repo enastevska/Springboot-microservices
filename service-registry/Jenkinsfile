@@ -83,8 +83,12 @@ pipeline {
             }
         }
 
-        stage ('Final') {
-            build job: 'employee-service-pipeline', wait: false
+        stage ('Employee service') {
+            steps {
+                script {
+                    build job: 'employee-service-pipeline', wait: false
+                }
+            }
         }
     }
 }

@@ -42,14 +42,18 @@ pipeline {
         }
 
         stage('Build Docker Image + Push') {
-            dir ('employee-service') {
-                def app = docker.build "localhost:5050/employee-service:${env.version}"
-                app.push()
+            steps {
+                dir ('employee-service') {
+                    def app = docker.build "localhost:5050/employee-service:${env.version}"
+                    app.push()
+                }
             }
         }
 
         stage ('Run Docker Image') {
-            docker.image("localhost:5000/employee-service:${env.version}").run('-p 8083:8083 --name employee --link service-registry')
+            steps {
+                 docker.image("localhost:5000/employee-service:${env.version}").run('-p 8083:8083 --name employee --link service-registry')
+            }
         }
 
         stage('Nexus Repository') {

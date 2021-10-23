@@ -28,14 +28,18 @@ pipeline {
         }
 
         stage('Build Docker Image + Push') {
-            dir ('cloud-gateway') {
-                def app = docker.build "localhost:5050/cloud-gateway:${env.version}"
-                app.push()
+            steps {
+                dir ('cloud-gateway') {
+                    def app = docker.build "localhost:5050/cloud-gateway:${env.version}"
+                    app.push()
+                }
             }
         }
 
         stage ('Run Docker Image') {
-            docker.image("localhost:5000/cloud-gateway:${env.version}").run('-p 9191:9191 --name gateway --link service-registry')
+            steps {
+                docker.image("localhost:5000/cloud-gateway:${env.version}").run('-p 9191:9191 --name gateway --link service-registry')
+            }
         }
 
         stage('Nexus Repository') {
